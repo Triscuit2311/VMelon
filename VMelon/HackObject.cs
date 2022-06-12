@@ -1,94 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Text;
 using MelonLoader;
 using ProjectM;
-using ProjectM.Gameplay;
-using ProjectM.Network;
-using ProjectM.Scripting;
-using ProjectM.UI;
 using UnhollowerRuntimeLib;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Transforms;
 using UnityEngine;
-using UnityEngine.Rendering.HighDefinition;
-using ExtensionMethods;
+using VMelon.EspItems;
+using VMelon.Utilities;
 
-
-namespace ExtensionMethods
-{
-    public static class Extensions
-    {
-        public static string LookupName(this PrefabGUID prefabGuid, 
-            NativeHashMap<PrefabGUID,FixedString128> nativeHashMap)
-        {
-            return (nativeHashMap.ContainsKey(prefabGuid) 
-                ? nativeHashMap[prefabGuid] : "GUID Not Found").ToString();
-        }
-            
-        public static string LookupName(this PrefabGUID prefabGuid, 
-            PrefabCollectionSystem pfCollectionSystem)
-        {
-            return (pfCollectionSystem.PrefabNameLookupMap.ContainsKey(prefabGuid) 
-                ? pfCollectionSystem.PrefabNameLookupMap[prefabGuid] : "GUID Not Found").ToString();
-        }
-            
-        public static  string LookupName(this PrefabGUID prefabGuid)
-        {
-            var pfCollectionSystem = WorldUtility
-                .FindWorld("Client_0")
-                .GetExistingSystem<PrefabCollectionSystem>();
-                
-            return (pfCollectionSystem.PrefabNameLookupMap.ContainsKey(prefabGuid) 
-                ? pfCollectionSystem.PrefabNameLookupMap[prefabGuid] : "GUID Not Found").ToString();
-        }
-            
-    }
-}
 
 namespace VMelon
 {
-
-
     [SuppressMessage("ReSharper", "RedundantOverriddenMember")]
     public class HackObject : MelonMod
     {
         private float fov_level = 60.0f;
         private PlayerEspItem local_player;
-        private List<GenericEspItem> _genericEspItems;
         private List<PlayerEspItem> _playerEspItems;
         private Camera cam;
-        
-        
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
-        {
-            base.OnSceneWasLoaded(buildIndex, sceneName);
-        }
-
-        public override void OnSceneWasInitialized(int buildIndex, string sceneName)
-        {
-            base.OnSceneWasInitialized(buildIndex, sceneName);
-        }
-
-        public override void OnSceneWasUnloaded(int buildIndex, string sceneName)
-        {
-            base.OnSceneWasUnloaded(buildIndex, sceneName);
-        }
-
-        public override void OnFixedUpdate()
-        {
-            base.OnFixedUpdate();
-        }
-
-        public override void OnApplicationStart()
-        {
-            base.OnApplicationStart();
-        }
+        private GUIStyle _guiStyle;
 
         public override void OnUpdate()
         {
@@ -109,22 +42,19 @@ namespace VMelon
             {
                 cam = Camera.main;
                 
-                if(_genericEspItems == null)
-                    _genericEspItems = new List<GenericEspItem>();
                 if(_playerEspItems == null)
                     _playerEspItems = new List<PlayerEspItem>();
-                _genericEspItems.Clear();
                 _playerEspItems.Clear();
                 
                 
                 
                 var sb = new StringBuilder();
-                
-                
+
                 var world = WorldUtility.FindWorld("Client_0");
                 
                 var prefab = world.GetExistingSystem<PrefabCollectionSystem>();
-                var comp = new ComponentType(Il2CppType.Of<EntityCategory>(), ComponentType.AccessMode.ReadOnly);
+                var comp = new ComponentType(Il2CppType.Of<EntityCategory>(), 
+                    ComponentType.AccessMode.ReadOnly);
                 var query = prefab.EntityManager.CreateEntityQuery(new [] {comp});
                 var nameMap = prefab.PrefabNameLookupMap;
 
@@ -140,7 +70,7 @@ namespace VMelon
                     var GUID = prefab.EntityManager.GetComponentData<PrefabGUID>(ent);
 
 
-                    string name = GUID.LookupName();
+                    var name = GUID.LookupName();
                     
                     switch (cat.UnitCategory)
                     {
@@ -153,18 +83,19 @@ namespace VMelon
                             _playerEspItems.Add(new PlayerEspItem(ent,prefab.EntityManager));
                             break;
                         case UnitCategory.Human:
-                            _genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Human ({name})"));
+                            //_genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Human ({name})"));
                             break;
                         case UnitCategory.Demon:
-                            _genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Demon ({name})"));
+                           // _genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Demon ({name})"));
                             break;
                         case UnitCategory.Beast:
-                            _genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Beast ({name})"));
+                            //_genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Beast ({name})"));
                             break;
                         case UnitCategory.Undead:
-                            _genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Undead ({name})"));
+                            //_genericEspItems.Add(new GenericEspItem(ent, prefab.EntityManager, $"Undead ({name})"));
                             break;
-                        
+                        default:
+                            break;
                     }
 
                     string bloodtype = "No Blood";
@@ -244,127 +175,37 @@ namespace VMelon
             
 
         }
-
-        public override void OnLateUpdate()
-        {
-            base.OnLateUpdate();
-        }
-
+        
         public override void OnGUI()
-        { 
+        {
+            _guiStyle = GUI.skin.label;
+            _guiStyle.fontSize = 20;
+            GUI.skin.label = _guiStyle;
+            
             GUI.Label(new Rect(10, 10, 300, 50), $"FOV [{fov_level:F0}] [F8 | F9]");
 
             if( _playerEspItems != null)
             {
                 foreach (var player in _playerEspItems)
                 {
-                    GUI.color = player._color;
+                    
                     
                     var spos = cam.WorldToScreenPoint(player.GetWorldPosition());
                     
-                    GUI.Label(new Rect(spos.x, Screen.height-spos.y,300,50), player.ToString());
-                }
-            }
-            
-            if (_genericEspItems != null)
-            {
-                foreach (var beast in _genericEspItems)
-                {
-                    GUI.color = beast._color;
+                    GUI.color = Color.black;
+                    GUI.Label(new Rect(spos.x+2, Screen.height-spos.y-2,500,50), player.ToString());
+                        
+                    GUI.color = player._color;
+                    GUI.Label(new Rect(spos.x, Screen.height-spos.y,500,50), player.ToString());
                     
-                    var spos = cam.WorldToScreenPoint(beast.GetWorldPosition());
+                    Render.DrawCircle(new Vector2(spos.x, Screen.height-spos.y), 100, 10,
+                        true, 5f);
                     
-                    GUI.Label(new Rect(spos.x, Screen.height-spos.y,300,50),beast.ToString());
                 }
-            
             }
             GUI.color = Color.white;
         }
-        
-        
 
-        class EspItem
-        {
-            protected static Vector3 _localPlayerPosition;
-            protected static EntityManager _entManager;
-            protected Entity baseEntity;
-            public Color _color; 
-            protected string _name;
-            protected float _distance;
-            protected Vector3 _worldPosition;
-        }
-        class GenericEspItem : EspItem
-        {
-            public GenericEspItem(Entity ent, EntityManager entityManager, string name)
-            {
-                _color = Color.red;
-                _distance = 0.0f;
-
-                _entManager = entityManager;
-                baseEntity = ent;
-                _name = name;
-
-                // Position
-                UpdatePosition();
-            }
-
-            private void UpdatePosition()
-            {
-                _worldPosition = _entManager.GetComponentData<Translation>(baseEntity).Value;
-            }
-            public override string ToString()
-            {
-                _distance = Vector3.Distance(_localPlayerPosition, _worldPosition);
-                return $"[{_distance:F0}] {_name}";
-            }
-            public Vector3 GetWorldPosition()
-            {
-                UpdatePosition();
-                return _worldPosition;
-            }
-        }
-        class PlayerEspItem : EspItem
-        {
-            public bool IsLocalPlayer = false;
-            
-            public PlayerEspItem(Entity ent, EntityManager entityManager)
-            {
-                _color = Color.red;
-                _distance = 0.0f;
-
-                _entManager = entityManager;
-                baseEntity = ent;
-                
-                // Name (need once)
-                var cHud = entityManager.GetComponentData<CharacterHUD>(ent);
-                _name = cHud.Name.ToString();
-                
-                // IsLocal (need Once)
-                IsLocalPlayer = cHud.TeamType == CharacterHUDSettings.TeamType.LocalPlayer;
-                
-                // Position
-                UpdatePosition();
-            }
-
-            private void UpdatePosition()
-            {
-                _worldPosition = _entManager.GetComponentData<Translation>(baseEntity).Value;
-                if (IsLocalPlayer)
-                {
-                    _localPlayerPosition = _worldPosition;
-                }
-            }
-            public override string ToString()
-            {
-                _distance = Vector3.Distance(_localPlayerPosition, _worldPosition);
-                return $"[{_distance:F0}] {_name}";
-            }
-            public Vector3 GetWorldPosition()
-            {
-                UpdatePosition();
-                return _worldPosition;
-            }
-        }
     }
 
 }
