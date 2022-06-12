@@ -1,0 +1,7 @@
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\VMelon.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\VMelon.pdb
+C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.csproj.AssemblyReference.cache
+C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.csproj.CoreCompileInputs.cache
+C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.pdb
+C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.csproj.CopyComplete
