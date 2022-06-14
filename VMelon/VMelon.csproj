@@ -631,6 +631,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="EspItems\EspItem.cs" />
+        <Compile Include="EspItems\Lookup.cs" />
         <Compile Include="Extensions.cs" />
         <Compile Include="GameVars.cs" />
         <Compile Include="HackObject.cs" />

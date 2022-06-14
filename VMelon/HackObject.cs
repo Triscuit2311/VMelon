@@ -4,27 +4,31 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text;
 using MelonLoader;
 using ProjectM;
+using ProjectM.Behaviours;
 using UnhollowerRuntimeLib;
 using Unity.Collections;
 using Unity.Entities;
 using UnityEngine;
 using VMelon.EspItems;
 using VMelon.Utilities;
-
+#pragma warning disable CS0168
 
 namespace VMelon
 {
     [SuppressMessage("ReSharper", "RedundantOverriddenMember")]
     public class HackObject : MelonMod
     {
+
+           
         private float fov_level = 60.0f;
-        private PlayerEspItem local_player;
+        //private PlayerEspItem local_player;
         private List<PlayerEspItem> _playerEspItems;
         private Camera cam;
         private GUIStyle _guiStyle;
 
         public override void OnUpdate()
         {
+
             if (Input.GetKeyDown(KeyCode.F8))
             {
                 fov_level += 5f;
@@ -40,6 +44,7 @@ namespace VMelon
 
             if (Input.GetKeyDown(KeyCode.F11))
             {
+                LoggerInstance.Msg(Screen.height + " " + Screen.width);
                 Cpt_EntityCategory = new ComponentType(Il2CppType.Of<EntityCategory>(),
                     ComponentType.AccessMode.ReadOnly);
                 Cpt_InventoryOwner = new ComponentType(Il2CppType.Of<InventoryOwner>(),
@@ -68,7 +73,7 @@ namespace VMelon
                 
                 var sb = new StringBuilder();
 
-               var query = ClientEntityManager.CreateEntityQuery(new[] {Cpt_EntityCategory});
+                var query = ClientEntityManager.CreateEntityQuery(new[] {Cpt_EntityCategory});
                 
                 var entities = query.ToEntityArray(Allocator.Temp);
 
@@ -77,11 +82,12 @@ namespace VMelon
                 {
 
                     var cat = ClientEntityManager.GetComponentData<EntityCategory>(ent);
+                    if (cat.MainCategory != MainEntityCategory.Unit) continue;
                     if (cat.UnitCategory == UnitCategory.None || cat.UnitCategory == UnitCategory.CastleObject) continue;
 
                     var GUID = ClientEntityManager.GetComponentData<PrefabGUID>(ent);
-                    
-                    var name = GUID.LookupName();
+
+                    var name = GUID.LookupChar();
                     
                     switch (cat.UnitCategory)
                     {
@@ -109,20 +115,7 @@ namespace VMelon
                             break;
                     }
 
-                    string bloodtype = "No Blood";
-                    try
-                    {
-                        var blood = ClientEntityManager.GetComponentData<Blood>(ent);
-                        bloodtype = (PfNameLookupTable.ContainsKey(blood.BloodType)
-                            ? PfNameLookupTable[blood.BloodType]
-                            : "Unknown").ToString();
-                    }
-                    catch (Exception e)
-                    {
-                        // ignored
-                    }
 
-                   
                     string unitType = cat.UnitCategory.ToString();
                     string mainCat = cat.MainCategory.ToString();
                     
@@ -147,11 +140,30 @@ namespace VMelon
                         // ignored
                     }
                     
-                    var _str = "-1";
+                    var npc_blood = "-1";
                     try{
                         var _comp = ClientEntityManager.GetComponentData<BloodConsumeSource>(ent);
-                        _str = _comp.UnitBloodType.LookupName() 
-                               + " %"+ _comp.BloodQuality.ToString("F0");
+                        npc_blood = _comp.UnitBloodType.LookupBlood();
+                    }
+                    catch (Exception e)
+                    {
+                        // ignored
+                    }
+                    
+                    var player_gear_score = "-1";
+                    try{
+                        var _comp = ClientEntityManager.GetComponentData<Equipment>(ent);
+                        player_gear_score = _comp.GetFullLevel().ToString("F0")
+                            ;
+                    }
+                    catch (Exception e)
+                    {
+                        // ignored
+                    }
+                    
+                    var _str = "-1";
+                    try{
+                        
                     }
                     catch (Exception e)
                     {
@@ -160,7 +172,7 @@ namespace VMelon
 
                     sb.AppendLine(
                         $"[Name:{name}] [Unit Type:{unitType}] [Main Cat:{mainCat}]" +
-                        $" [Blood:{_str}] [HP:{hp_str}] [Lvl: {lvl}]");
+                        $" [Blood:{npc_blood}] [HP:{hp_str}] [Lvl: {lvl}] [{player_gear_score}]");
                     
                                         
                     // foreach (var componentType in ClientEntityManager.GetComponentTypes(ent, Allocator.Temp))
@@ -175,7 +187,8 @@ namespace VMelon
                     //ClientEntityManager.GetComponentData<UnitStats>(ent).
                     //ClientEntityManager.GetComponentData<ResistanceData>(ent).
                     //ClientEntityManager.GetComponentData<MiscAiGameplayData>(ent)
-                    //ClientEntityManager.GetComponentData<Vision>(ent)
+                    var vis = ClientEntityManager.GetComponentData<Vision>(ent);
+                    
                     //ClientEntityManager.GetComponentData<AggroConsumer>(ent)
 
                 }
@@ -183,12 +196,13 @@ namespace VMelon
                 LoggerInstance.Msg(sb.ToString());
 
             }
-            
-
         }
         
+        
+
         public override void OnGUI()
         {
+
             _guiStyle = GUI.skin.label;
             _guiStyle.fontSize = 20;
             GUI.skin.label = _guiStyle;
@@ -199,8 +213,7 @@ namespace VMelon
             {
                 foreach (var player in _playerEspItems)
                 {
-                    
-                    
+
                     var spos = cam.WorldToScreenPoint(player.GetWorldPosition());
                     
                     GUI.color = Color.black;
@@ -213,20 +226,18 @@ namespace VMelon
             }
             GUI.color = Color.white;
         }
-
-        public override void OnSceneWasLoaded(int buildIndex, string sceneName)
-        {
-
-        }
         
         
-        private bool _initialized = false;
+        
+        
+        
+        //private bool _initialized = false;
         private World ClientWorld;
         private PrefabCollectionSystem ClientPFCollection;
         private ComponentType Cpt_EntityCategory;
         private ComponentType Cpt_InventoryOwner;
         private NativeHashMap<PrefabGUID, FixedString128> PfNameLookupTable;
         private EntityManager ClientEntityManager;
-    }
+    } 
 
 }

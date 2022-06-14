@@ -67,7 +67,7 @@ namespace VMelon.EspItems
             sb.Append($"[{_distance:F0}] ");
             sb.Append($"{_name} ");
             sb.Append($"[{_health.Value:F0}/{_health.MaxHealth._Value:F0}] ");
-            sb.Append($"[{_blood.BloodType.LookupName()} :" +
+            sb.Append($"[{_blood.BloodType.LookupBlood()} :" +
                       $" [{_blood.Value}/{_blood.MaxBlood._Value}] :" +
                       $" {_blood.Quality}%]");
             return sb.ToString();
