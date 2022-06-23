@@ -103,8 +103,9 @@ namespace VMelon.EspItems
     {
         private float _bloodQuality;
         private string _bloodType;
-        private Health _health;
-        private UnitLevel _unitLevel;
+        private float _hpAmt;
+        private float _hpMax;
+        private int _unitLevel;
 
         public NpcEspItem(Entity ent)
         {
@@ -135,16 +136,34 @@ namespace VMelon.EspItems
             Distance = Vector3.Distance(LocalPlayerPosition, WorldPosition);
 
             sb.Append($"* [{Distance:F0}m]");
-            sb.Append($" {Name} [Lv: {_unitLevel.Level}]");
-            sb.Append($"\n[{_health.Value:F0}/{_health.MaxHealth._Value:F0} HP] ");
+            sb.Append($" {Name} [Lv: {_unitLevel}]");
+            sb.Append($"\n[{_hpAmt:F0}/{_hpMax:F0} HP] ");
             sb.Append($"[{_bloodType} {_bloodQuality:F0}%]");
             return sb.ToString();
         }
 
         protected override void UpdateComponents()
         {
-            _health = EntManager.GetComponentData<Health>(EntObj);
-            _unitLevel = EntManager.GetComponentData<UnitLevel>(EntObj);
+            try
+            {
+                var health = EntManager.GetComponentData<Health>(EntObj);
+                _hpAmt = health.Value;
+                _hpMax = health.MaxHealth._Value;
+            }
+            catch (Exception)
+            {
+                _hpAmt = _hpMax = 0f;
+            }
+
+            try
+            {
+                _unitLevel = EntManager.GetComponentData<UnitLevel>(EntObj).Level;
+            }
+            catch (Exception)
+            {
+                _unitLevel = -1;
+            }
+
             if (EntManager.HasComponent<BloodConsumeSource>(EntObj))
             {
                 var bcs = EntManager.GetComponentData<BloodConsumeSource>(EntObj);
