@@ -6,6 +6,9 @@ This is a MelonLoader mod, and as such require that you install MelonLoader.
 - FOV Changer
 - Player and NPC information display
 
+## Note
+I should switch the entity query over to use the C# Jobs system, since it should run in a seperate thread. This could create a stutter every so often on lower-end machines, but I have no issues on an i9-10850k.
+
 
 Please note this code is provided with no warranty and you assume all liability when using any or all of this code.
 Please see full [LICENSE](https://github.com/Triscuit2311/VMelon/blob/master/LICENSE) for details.
