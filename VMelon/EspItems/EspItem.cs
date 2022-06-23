@@ -16,7 +16,7 @@ namespace VMelon.EspItems
         protected static EntityManager EntManager;
         public Color Color;
         protected float Distance;
-
+        public bool Exempt = false;
 
         protected Entity EntObj;
         protected string Name;
@@ -31,11 +31,9 @@ namespace VMelon.EspItems
 
         public static void Init(EntityManager entityManager)
         {
-            if (!Initialized)
-            {
-                Initialized = true;
-                EntManager = entityManager;
-            }
+            if (Initialized) return;
+            Initialized = true;
+            EntManager = entityManager;
         }
     }
 
@@ -44,7 +42,7 @@ namespace VMelon.EspItems
         private Blood _blood;
         private Equipment _equipment;
         private Health _health;
-        public bool IsLocalPlayer;
+        public readonly bool IsLocalPlayer;
 
         public PlayerEspItem(Entity ent)
         {
@@ -61,6 +59,9 @@ namespace VMelon.EspItems
 
             // IsLocal (need Once)
             IsLocalPlayer = cHud.TeamType == CharacterHUDSettings.TeamType.LocalPlayer;
+            if (IsLocalPlayer)
+                base.Exempt = true;
+
         }
 
         private void UpdatePosition()
@@ -95,43 +96,6 @@ namespace VMelon.EspItems
             UpdatePosition();
             UpdateComponents();
             return WorldPosition;
-        }
-    }
-
-    internal class StorageEspItem : EspItem
-    {
-        //private InventoryOwner _invOwner;
-        public StorageEspItem(Entity ent)
-        {
-            if (!Initialized)
-                throw new Exception("EspItem Base class not initialized");
-        }
-
-        protected override void UpdateComponents()
-        {
-            //  _invOwner = _entManager.GetComponentData<InventoryOwner>(_entObj);
-        }
-
-        protected internal override Vector3 GetWorldPosition()
-        {
-            UpdatePosition();
-            UpdateComponents();
-            return WorldPosition;
-        }
-
-        private void UpdatePosition()
-        {
-            WorldPosition = EntManager.GetComponentData<Translation>(EntObj).Value;
-        }
-
-        public override string ToString()
-        {
-            var sb = new StringBuilder();
-            Distance = Vector3.Distance(LocalPlayerPosition, WorldPosition);
-
-            sb.Append($"[{Distance:F0}] ");
-            sb.Append("INVENTORY");
-            return sb.ToString();
         }
     }
 

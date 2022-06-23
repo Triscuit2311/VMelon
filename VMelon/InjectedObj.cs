@@ -158,7 +158,7 @@ namespace VMelon
             
             foreach (var item in _espItems)
             {
-                if (!item.Exists()) continue;
+                if (!item.Exists() || item.Exempt) continue;
                 var spos = _cam.WorldToScreenPoint(item.GetWorldPosition());
                 if (spos.z < 0) continue;
                 GUI.color = Color.black;
