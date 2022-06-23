@@ -152,15 +152,16 @@ namespace VMelon
             _guiStyle.fontSize = 20;
             GUI.skin.label = _guiStyle;
 
-            GUI.Label(new Rect(10, 10, 300, 100), $"VMelon - Triscuit#2311\nFOV [{_fovLevel:F0}] [F8 | F9]");
+            GUI.Label(new Rect(10, 10, 300, 100),
+                $"VMelon - Triscuit#2311\nFOV [{_fovLevel:F0}] [F8 | F9]");
             
             if (_espItems == null) return;
             
             foreach (var item in _espItems)
             {
-                if (!item.Exists() || item.Exempt) continue;
+                if (!item.Exists()) continue;
                 var spos = _cam.WorldToScreenPoint(item.GetWorldPosition());
-                if (spos.z < 0) continue;
+                if (spos.z < 0 || item.Exempt) continue;
                 GUI.color = Color.black;
                 GUI.Label(new Rect(spos.x - 2, Screen.height - spos.y - 2, 600, 500),
                     item.ToString());
