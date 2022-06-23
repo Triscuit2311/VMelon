@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using ProjectM;
 using ProjectM.UI;
 using Unity.Entities;
@@ -9,81 +10,190 @@ namespace VMelon.EspItems
 {
     public abstract class EspItem
     {
-        protected static bool _initialized = false;
-        protected static Vector3 _localPlayerPosition;
-        protected static EntityManager _entManager;
-        
-        
-        protected Entity baseEntity;
-        public Color _color; 
-        protected string _name;
-        protected float _distance;
-        protected Vector3 _worldPosition;
-        protected abstract void UpdateComponents();
-    }
-    
-    class PlayerEspItem : EspItem
-    {
-        public bool IsLocalPlayer = false;
-        private Health _health;
-        private Blood _blood;
-        
-        //private UnitLevel
-        
-        public PlayerEspItem(Entity ent, EntityManager entityManager)
-        {
-            if (!_initialized)
-            {
-                _initialized = true;
-                EspItem._entManager = entityManager;
-            }
-            
-            _color = Color.red;
-            _distance = 0.0f;
+        internal static bool Initialized;
 
-            baseEntity = ent;
-            
+        internal static Vector3 LocalPlayerPosition;
+        protected static EntityManager EntManager;
+        public Color Color;
+        protected float Distance;
+
+
+        protected Entity EntObj;
+        protected string Name;
+        protected Vector3 WorldPosition;
+        protected abstract void UpdateComponents();
+        protected internal abstract Vector3 GetWorldPosition();
+
+        protected internal virtual bool Exists()
+        {
+            return EntManager.Exists(EntObj);
+        }
+
+        public static void Init(EntityManager entityManager)
+        {
+            if (!Initialized)
+            {
+                Initialized = true;
+                EntManager = entityManager;
+            }
+        }
+    }
+
+    internal class PlayerEspItem : EspItem
+    {
+        private Blood _blood;
+        private Equipment _equipment;
+        private Health _health;
+        public bool IsLocalPlayer;
+
+        public PlayerEspItem(Entity ent)
+        {
+            if (!Initialized)
+                throw new Exception("EspItem Base class not initialized");
+            Color = Color.red;
+            Distance = 0.0f;
+
+            EntObj = ent;
+
             // Name (need once)
-            var cHud = entityManager.GetComponentData<CharacterHUD>(ent);
-            _name = cHud.Name.ToString();
-            
+            var cHud = EntManager.GetComponentData<CharacterHUD>(ent);
+            Name = cHud.Name.ToString();
+
             // IsLocal (need Once)
             IsLocalPlayer = cHud.TeamType == CharacterHUDSettings.TeamType.LocalPlayer;
         }
 
         private void UpdatePosition()
         {
-            _worldPosition = _entManager.GetComponentData<Translation>(baseEntity).Value;
-            if (IsLocalPlayer)
-            {
-                _localPlayerPosition = _worldPosition;
-            }
+            WorldPosition = EntManager.GetComponentData<Translation>(EntObj).Value;
+            if (IsLocalPlayer && !_health.IsDead) LocalPlayerPosition = WorldPosition;
         }
+
         public override string ToString()
         {
             var sb = new StringBuilder();
-            _distance = Vector3.Distance(_localPlayerPosition, _worldPosition);
+            Distance = Vector3.Distance(LocalPlayerPosition, WorldPosition);
 
-            sb.Append($"[{_distance:F0}] ");
-            sb.Append($"{_name} ");
-            sb.Append($"[{_health.Value:F0}/{_health.MaxHealth._Value:F0}] ");
-            sb.Append($"[{_blood.BloodType.LookupBlood()} :" +
-                      $" [{_blood.Value}/{_blood.MaxBlood._Value}] :" +
-                      $" {_blood.Quality}%]");
+            sb.Append($"* [{Distance:F0}m] ");
+            sb.Append($"{Name} [Lv: {_equipment.GetFullLevel()}]");
+            sb.Append(
+                $"\n[{_health.Value:F0}/{_health.MaxHealth._Value:F0} HP] [{_blood.Value:F0}/{_blood.MaxBlood._Value:F0} Bl]");
+            sb.Append($"\n[{_blood.BloodType.LookupBlood()} {_blood.Quality}%]");
             return sb.ToString();
         }
 
         protected override void UpdateComponents()
         {
-            _blood = _entManager.GetComponentData<Blood>(baseEntity);
-            _health = _entManager.GetComponentData<Health>(baseEntity);
+            _blood = EntManager.GetComponentData<Blood>(EntObj);
+            _health = EntManager.GetComponentData<Health>(EntObj);
+            _equipment = EntManager.GetComponentData<Equipment>(EntObj);
         }
 
-        public Vector3 GetWorldPosition()
+
+        protected internal override Vector3 GetWorldPosition()
         {
             UpdatePosition();
             UpdateComponents();
-            return _worldPosition;
+            return WorldPosition;
+        }
+    }
+
+    internal class StorageEspItem : EspItem
+    {
+        //private InventoryOwner _invOwner;
+        public StorageEspItem(Entity ent)
+        {
+            if (!Initialized)
+                throw new Exception("EspItem Base class not initialized");
+        }
+
+        protected override void UpdateComponents()
+        {
+            //  _invOwner = _entManager.GetComponentData<InventoryOwner>(_entObj);
+        }
+
+        protected internal override Vector3 GetWorldPosition()
+        {
+            UpdatePosition();
+            UpdateComponents();
+            return WorldPosition;
+        }
+
+        private void UpdatePosition()
+        {
+            WorldPosition = EntManager.GetComponentData<Translation>(EntObj).Value;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            Distance = Vector3.Distance(LocalPlayerPosition, WorldPosition);
+
+            sb.Append($"[{Distance:F0}] ");
+            sb.Append("INVENTORY");
+            return sb.ToString();
+        }
+    }
+
+    internal class NpcEspItem : EspItem
+    {
+        private float _bloodQuality;
+        private string _bloodType;
+        private Health _health;
+        private UnitLevel _unitLevel;
+
+        public NpcEspItem(Entity ent)
+        {
+            if (!Initialized)
+                throw new Exception("EspItem Base class not initialized");
+
+            _bloodQuality = 0;
+            _bloodType = "None";
+
+            Color = Color.yellow;
+            Distance = 0.0f;
+
+            EntObj = ent;
+
+            var guid = EntManager.GetComponentData<PrefabGUID>(ent);
+
+            Name = guid.LookupChar();
+        }
+
+        private void UpdatePosition()
+        {
+            WorldPosition = EntManager.GetComponentData<Translation>(EntObj).Value;
+        }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            Distance = Vector3.Distance(LocalPlayerPosition, WorldPosition);
+
+            sb.Append($"* [{Distance:F0}m]");
+            sb.Append($" {Name} [Lv: {_unitLevel.Level}]");
+            sb.Append($"\n[{_health.Value:F0}/{_health.MaxHealth._Value:F0} HP] ");
+            sb.Append($"[{_bloodType} {_bloodQuality:F0}%]");
+            return sb.ToString();
+        }
+
+        protected override void UpdateComponents()
+        {
+            _health = EntManager.GetComponentData<Health>(EntObj);
+            _unitLevel = EntManager.GetComponentData<UnitLevel>(EntObj);
+            if (EntManager.HasComponent<BloodConsumeSource>(EntObj))
+            {
+                var bcs = EntManager.GetComponentData<BloodConsumeSource>(EntObj);
+                _bloodQuality = bcs.BloodQuality;
+                _bloodType = bcs.UnitBloodType.LookupBlood();
+            }
+        }
+
+        protected internal override Vector3 GetWorldPosition()
+        {
+            UpdatePosition();
+            UpdateComponents();
+            return WorldPosition;
         }
     }
 }

@@ -5,19 +5,7 @@ namespace VMelon.EspItems
 {
     public static class Lookup
     {
-        public static string LookupChar(this PrefabGUID guid)
-        {
-            CharLookup.TryGetValue(guid.GuidHash, out var value);
-            return value;
-        }
-        public static string LookupBlood(this PrefabGUID guid)
-        {
-            BloodLookup.TryGetValue(guid.GuidHash, out var value);
-            return value;
-        }
-        
-        
-        private static readonly Dictionary<int, string> CharLookup = new Dictionary<int, string>()
+        private static readonly Dictionary<int, string> CharLookup = new Dictionary<int, string>
         {
             [17367048] = "Knight Servant", // CHAR_Town_Knight_2H_Servant
             [2136899683] = "Spider", // CHAR_Spider_Melee
@@ -343,10 +331,10 @@ namespace VMelon.EspItems
             [1106149033] = "CHAR_Bandit_Stalker_VBlood", // CHAR_Bandit_Stalker_VBlood
             [-309264723] = "Stalker", // CHAR_Bandit_Stalker
             [516718373] = "Farmer", // CHAR_Farmlands_Farmer_Servant
-            [1632206738] = "Mantrap", // CHAR_Mantrap_Dull
+            [1632206738] = "Mantrap" // CHAR_Mantrap_Dull
         };
 
-        private static readonly Dictionary<int, string> BloodLookup = new Dictionary<int, string>()
+        private static readonly Dictionary<int, string> BloodLookup = new Dictionary<int, string>
         {
             [-77658840] = "Creature",
             [1557174542] = "VBlood",
@@ -355,7 +343,19 @@ namespace VMelon.EspItems
             [-899826404] = "None",
             [-1094467405] = "Warrior",
             [793735874] = "Rogue",
-            [-540707191] = "Worker",
+            [-540707191] = "Worker"
         };
+
+        public static string LookupChar(this PrefabGUID guid)
+        {
+            CharLookup.TryGetValue(guid.GuidHash, out var value);
+            return value;
+        }
+
+        public static string LookupBlood(this PrefabGUID guid)
+        {
+            BloodLookup.TryGetValue(guid.GuidHash, out var value);
+            return value;
+        }
     }
 }

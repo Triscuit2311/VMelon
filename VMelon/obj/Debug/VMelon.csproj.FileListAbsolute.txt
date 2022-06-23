@@ -5,3 +5,13 @@ C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.csproj.CoreCompileIn
 C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.dll
 C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.pdb
 C:\Users\trisc\RiderProjects\VMelon\VMelon\obj\Debug\VMelon.csproj.CopyComplete
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\GameOverlay.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.Direct2D1.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.DXGI.dll
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\GameOverlay.xml
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.pdb
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.Direct2D1.pdb
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.Direct2D1.xml
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.DXGI.pdb
+C:\Users\trisc\RiderProjects\VMelon\VMelon\bin\Debug\SharpDX.DXGI.xml
