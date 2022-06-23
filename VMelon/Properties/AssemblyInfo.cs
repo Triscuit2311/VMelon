@@ -36,5 +36,5 @@ using VMelon;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-[assembly: MelonInfo(typeof(HackObject), "VMelon", "1.0.1", "Triscuit")]
+[assembly: MelonInfo(typeof(InjectedObj), "VMelon", "1.0.1", "Triscuit")]
 [assembly: MelonGame]

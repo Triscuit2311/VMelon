@@ -12,7 +12,7 @@ using VMelon.EspItems;
 namespace VMelon
 {
     [SuppressMessage("ReSharper", "RedundantOverriddenMember")]
-    public class HackObject : MelonMod
+    public class InjectedObj : MelonMod
     {
         private static List<EspItem> _espItems;
 
@@ -33,6 +33,10 @@ namespace VMelon
 
         public override void OnApplicationStart()
         {
+            LoggerInstance.Error("  __ __ _____     _         ");
+            LoggerInstance.Error(" |  |  |     |___| |___ ___ ");
+            LoggerInstance.Error(" |  |  | | | | -_| | . |   |");
+            LoggerInstance.Error("  \\___/|_|_|_|___|_|___|_|_|");
             LoggerInstance.Msg("FOV Changer & ESP - Triscuit#2311");
         }
 
@@ -46,7 +50,7 @@ namespace VMelon
 
             do
             {
-                _entUpdateTimer = 5f;
+                _entUpdateTimer = 10f;
 
                 if (!UpdateEntitySystems()) break;
 
@@ -125,13 +129,14 @@ namespace VMelon
             if (_clientWorld == null)
                 _clientWorld = WorldUtility.FindWorld("Client_0");
 
+
             try
             {
                 _clientPfCollection = _clientWorld.GetExistingSystem<PrefabCollectionSystem>();
                 _clientEntityManager = _clientPfCollection.EntityManager;
                 EspItem.Init(_clientEntityManager);
             }
-            catch (Exception e)
+            catch (Exception)
             {
                 LoggerInstance.Warning("Unable to get entity Manger, probably not loaded in yet.");
                 return false;
@@ -148,28 +153,23 @@ namespace VMelon
             GUI.skin.label = _guiStyle;
 
             GUI.Label(new Rect(10, 10, 300, 100), $"VMelon - Triscuit#2311\nFOV [{_fovLevel:F0}] [F8 | F9]");
-
-
-            if (_espItems != null)
+            
+            if (_espItems == null) return;
+            
+            foreach (var item in _espItems)
             {
-                // GUI.Label(new Rect(10, 50, 300, 50), $"Entities: [{EspItems.Count}]");
-                foreach (var item in _espItems)
-                {
-                    if (!item.Exists()) continue;
-                    var spos = _cam.WorldToScreenPoint(item.GetWorldPosition());
-                    if (spos.z < 0) continue;
-                    GUI.color = Color.black;
-                    GUI.Label(new Rect(spos.x - 2, Screen.height - spos.y - 2, 600, 500),
-                        item.ToString());
-                    GUI.color = item.Color;
-                    GUI.Label(new Rect(spos.x, Screen.height - spos.y, 600, 500),
-                        item.ToString());
-                }
-
-                GUI.color = Color.white;
+                if (!item.Exists()) continue;
+                var spos = _cam.WorldToScreenPoint(item.GetWorldPosition());
+                if (spos.z < 0) continue;
+                GUI.color = Color.black;
+                GUI.Label(new Rect(spos.x - 2, Screen.height - spos.y - 2, 600, 500),
+                    item.ToString());
+                GUI.color = item.Color;
+                GUI.Label(new Rect(spos.x, Screen.height - spos.y, 600, 500),
+                    item.ToString());
             }
 
-            //GUI.DrawTexture(new Rect(100, 100, 100, 100), Texture2D.whiteTexture);
+            GUI.color = Color.white;
         }
     }
 }
